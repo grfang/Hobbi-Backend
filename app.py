@@ -5,9 +5,11 @@ import psycopg2
 import random
 import string
 
+#flask setup
 app = Flask(__name__)
 CORS(app)
 
+#postgres setup
 DB_USER = 'postgres'
 DB_PASSWORD = 'postgres'
 DB_HOST = 'localhost'
@@ -24,6 +26,7 @@ conn = psycopg2.connect(
 
 cursor = conn.cursor()
 
+#routes
 @app.route('/', methods=['GET'])
 def signup():
     query = request.args.to_dict()
