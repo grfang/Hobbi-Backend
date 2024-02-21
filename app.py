@@ -29,7 +29,11 @@ def signup_route():
     first_name = query['firstname']
     last_name = query['lastname']
     exercise_goal = query['exercise_goal']
-    sleep_goal = query['exercise_goal']
+    skill = query['skill']
+    equipment = query['equipment']
+    exercise_type = query['exercise_type']
+    sleep_goal = query['sleep_goal']
+    wakeup_time = query['wakeup_time']
     
     user_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
     
@@ -38,12 +42,20 @@ def signup_route():
         "first": first_name,
         "last": last_name,
         "email": email,
-        "goals": {
-            "exercise": exercise_goal,
-            "sleep": sleep_goal
+        "exercise_info": {
+            "exercise_goal": exercise_goal,
+            "skill": skill,
+            "equipment": equipment,
+            "exercise_type": exercise_type
         },
-        "happiness_score": 0,
-        "journal_entry": ""
+        "sleep_info": {
+            "sleep_goal": sleep_goal,
+            "wakeup_time": wakeup_time
+        },
+        "journal_info": {
+            "happiness_score": 0,
+            "journal_entry": ""
+        }
     }
     
     db.collection("users").document(user_id).set(data)
@@ -75,6 +87,18 @@ def get_user_data():
     else:
         user_data = user_query[0].to_dict()
         return jsonify({'exit_status': 0, 'data': user_data})
+    
+@app.route('/journal', methods=['GET'])
+def journal():
+    pass
+
+@app.route('/fitness', methods=['GET'])
+def fitness():
+    pass
+
+@app.route('/sleep', methods=['GET'])
+def sleep():
+    pass
 
 if __name__ == '__main__':
     # app.run()
