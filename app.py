@@ -143,9 +143,9 @@ def entry():
     entry_date = user_query[0].to_dict().get("journal_info", {}).get('date')
     
     if date == entry_date:
-        return jsonify({'success': 'true', 'data':{'entry': journal_entry, 'date': entry_date}})
+        return jsonify({'success': True, 'data':{'entry': journal_entry, 'date': entry_date}})
     else:
-        return jsonify({'success': 'false', 'data':{'entry': journal_entry, 'date': entry_date}})
+        return jsonify({'success': False, 'data':{'entry': journal_entry, 'date': entry_date}})
 
 @app.route('/fitness', methods=['GET'])
 def fitness():
