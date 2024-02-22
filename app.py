@@ -57,7 +57,8 @@ def signup_route():
         },
         "journal_info": {
             "happiness_score": 0,
-            "journal_entry": ""
+            "journal_entry": "",
+            "date": ""
         }
     }
     
@@ -96,6 +97,7 @@ def journal():
     query = request.args.to_dict()
     user_id = query['user_id']
     text_content = query['entry']
+    date = query['date']
     
     document_type_in_plain_text = language_v2.Document.Type.PLAIN_TEXT
     
@@ -117,13 +119,33 @@ def journal():
     data_to_update = {
         "journal_info": {
             "happiness_score": score,
-            "journal_entry": text_content
+            "journal_entry": text_content,
+            "date": date
         }
     }
     
     db.collection("users").document(user_id).update(data_to_update)
     
     return jsonify({'exit_status': 0, 'score': score})
+
+@app.route('/entry', methods=['GET'])
+def entry():
+    query = request.args.to_dict()
+    user_id = query['user_id']
+    date = query['date']
+    
+    user_query = db.collection("users").where("user_id", "==", user_id).limit(1).get()
+    
+    if not user_query:
+        return jsonify({'exit_status': -1})
+    
+    journal_entry = user_query[0].to_dict().get("journal_info", {}).get('journal_entry')
+    entry_date = user_query[0].to_dict().get("journal_info", {}).get('date')
+    
+    if date == entry_date:
+        return jsonify({'success': 'true', 'data':{'entry': journal_entry, 'date': entry_date}})
+    else:
+        return jsonify({'success': 'false', 'data':{'entry': journal_entry, 'date': entry_date}})
 
 @app.route('/fitness', methods=['GET'])
 def fitness():
@@ -172,5 +194,4 @@ def sleep():
     return jsonify({'exit_status': 0, 'wakeup_times': wakeUpTimes})
 
 if __name__ == '__main__':
-    # app.run()
-    pass
+    app.run()
