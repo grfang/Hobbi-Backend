@@ -29,15 +29,15 @@ CORS(app)
 #routes
 @app.route('/signup', methods=['POST'])
 def signup_route():
-    query = request.args.to_dict()
-    email = query['emails']
-    first_name = query['firstname']
-    last_name = query['lastname']
-    exercise_goal = query['exercise_goal']
-    skill = query['skill']
-    equipment = query['equipment']
-    sleep_goal = query['sleep_goal']
-    wakeup_time = query['wakeup_time']
+    data = request.json
+    email = data['emails']
+    first_name = data['firstname']
+    last_name = data['lastname']
+    exercise_goal = data['exercise_goal']
+    skill = data['skill']
+    equipment = data['equipment']
+    sleep_goal = data['sleep_goal']
+    wakeup_time = data['wakeup_time']
     
     user_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
     
@@ -64,7 +64,7 @@ def signup_route():
     
     db.collection("users").document(user_id).set(data)
     
-    return jsonify({'exit_status': 0, 'user_id': user_id})
+    return jsonify({'success': True, 'data':{'user_id': user_id}})
 
 @app.route('/login', methods=['GET'])
 def login():
@@ -74,10 +74,10 @@ def login():
     user_query = db.collection("users").where("email", "==", email).limit(1).get()
 
     if not user_query:
-        return jsonify({'exit_status': -1})
+        return jsonify({'success': False})
     else:
         user_id = user_query[0].id
-        return jsonify({'exit_status': 0, 'user_id': user_id})
+        return jsonify({'success': True, 'data':{'user_id': user_id}})
     
 @app.route('/data', methods=['GET'])
 def get_user_data():
@@ -87,17 +87,17 @@ def get_user_data():
     user_query = db.collection("users").where("user_id", "==", user_id).limit(1).get()
     
     if not user_query:
-        return jsonify({'exit_status': -1})
+        return jsonify({'success': False})
     else:
         user_data = user_query[0].to_dict()
-        return jsonify({'exit_status': 0, 'data': user_data})
+        return jsonify({'success': True, 'data': user_data})
     
-@app.route('/journal', methods=['GET'])
+@app.route('/journal', methods=['POST'])
 def journal():
-    query = request.args.to_dict()
-    user_id = query['user_id']
-    text_content = query['entry']
-    date = query['date']
+    data = request.json
+    user_id = data['user_id']
+    text_content = data['entry']
+    date = data['date']
     
     document_type_in_plain_text = language_v2.Document.Type.PLAIN_TEXT
     
@@ -126,7 +126,7 @@ def journal():
     
     db.collection("users").document(user_id).update(data_to_update)
     
-    return jsonify({'exit_status': 0, 'score': score})
+    return jsonify({'success': True, 'data':{'score': score}})
 
 @app.route('/entry', methods=['GET'])
 def entry():
@@ -137,7 +137,7 @@ def entry():
     user_query = db.collection("users").where("user_id", "==", user_id).limit(1).get()
     
     if not user_query:
-        return jsonify({'exit_status': -1})
+        return jsonify({'success': False})
     
     journal_entry = user_query[0].to_dict().get("journal_info", {}).get('journal_entry')
     entry_date = user_query[0].to_dict().get("journal_info", {}).get('date')
@@ -145,19 +145,19 @@ def entry():
     if date == entry_date:
         return jsonify({'success': True, 'data':{'entry': journal_entry, 'date': entry_date}})
     else:
-        return jsonify({'success': False, 'data':{'entry': journal_entry, 'date': entry_date}})
+        return jsonify({'success': False})
 
-@app.route('/fitness', methods=['GET'])
+@app.route('/fitness', methods=['GET', 'POST'])
 def fitness():
-    query = request.args.to_dict()
-    user_id = query['user_id']
-    body_part = query['body_part']
-    exercise_type = query['exercise_type']
+    data = request.json
+    user_id = data['user_id']
+    body_part = data['body_part']
+    exercise_type = data['exercise_type']
     
     user_query = db.collection("users").where("user_id", "==", user_id).limit(1).get()
     
     if not user_query:
-        return jsonify({'exit_status': -1})
+        return jsonify({'success': False})
     
     skill = user_query[0].to_dict().get("exercise_info", {}).get('skill')
     equipment = user_query[0].to_dict().get("exercise_info", {}).get('equipment')
@@ -165,13 +165,13 @@ def fitness():
     user_query = db.collection("exercises").where("BodyPart", "==", body_part).where("Level", "==", skill).where("Type", "==", exercise_type).where("Equipment", "in", equipment).limit(20).get()
     
     if not user_query:
-        return jsonify({'exit_status': -1})
+        return jsonify({'success': False})
     
     exercise_data = []
     for doc in user_query:
         exercise_data.append(doc.to_dict())
         
-    return jsonify({'exit_status': 0, 'exercise_data': exercise_data})
+    return jsonify({'success': True, 'data': exercise_data})
 
 @app.route('/sleep', methods=['GET'])
 def sleep():
@@ -180,7 +180,7 @@ def sleep():
     user_query = db.collection("users").where("user_id", "==", user_id).limit(1).get()
     
     if not user_query:
-        return jsonify({'exit_status': -1})
+        return jsonify({'success': False})
     
     awakeTime = user_query[0].to_dict().get("sleep_info", {}).get('wakeup_time')
     wakeUpTimes = []
@@ -191,7 +191,7 @@ def sleep():
         if wakeUpTimes[x] < 0:
             wakeUpTimes[x] = 24 + wakeUpTimes[x]
     
-    return jsonify({'exit_status': 0, 'wakeup_times': wakeUpTimes})
+    return jsonify({'success': True, 'wakeup_times': wakeUpTimes})
 
 if __name__ == '__main__':
     app.run()
