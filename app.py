@@ -141,9 +141,10 @@ def entry():
     
     journal_entry = user_query[0].to_dict().get("journal_info", {}).get('journal_entry')
     entry_date = user_query[0].to_dict().get("journal_info", {}).get('date')
+    score = user_query[0].to_dict().get("journal_info", {}).get('happiness_score')
     
     if date == entry_date:
-        return jsonify({'success': True, 'data':{'entry': journal_entry, 'date': entry_date}})
+        return jsonify({'success': True, 'data':{'entry': journal_entry, 'date': entry_date, 'score': score}})
     else:
         return jsonify({'success': False})
 
@@ -152,7 +153,7 @@ def fitness():
     data = request.json
     user_id = data['user_id']
     body_part = data['body_part']
-    exercise_type = data['exercise_type']
+    # exercise_type = data['exercise_type']
     
     user_query = db.collection("users").where("user_id", "==", user_id).limit(1).get()
     
@@ -162,7 +163,8 @@ def fitness():
     skill = user_query[0].to_dict().get("exercise_info", {}).get('skill')
     equipment = user_query[0].to_dict().get("exercise_info", {}).get('equipment')
     
-    user_query = db.collection("exercises").where("BodyPart", "==", body_part).where("Level", "==", skill).where("Type", "==", exercise_type).where("Equipment", "in", equipment).limit(20).get()
+    # .where("Type", "==", exercise_type)
+    user_query = db.collection("exercises").where("BodyPart", "==", body_part).where("Level", "==", skill).where("Equipment", "in", equipment).limit(20).get()
     
     if not user_query:
         return jsonify({'success': False})
@@ -171,7 +173,7 @@ def fitness():
     for doc in user_query:
         exercise_data.append(doc.to_dict())
         
-    return jsonify({'success': True, 'data': exercise_data})
+    return jsonify({'success': True, 'exercises': exercise_data})
 
 @app.route('/sleep', methods=['GET'])
 def sleep():
@@ -186,7 +188,7 @@ def sleep():
     wakeUpTimes = []
     track = 2
     for x in range(3):
-        wakeUpTimes[x] = awakeTime - (6 + (1.5 * track))
+        wakeUpTimes.append(awakeTime - (6 + (1.5 * track)))
         track -= 1
         if wakeUpTimes[x] < 0:
             wakeUpTimes[x] = 24 + wakeUpTimes[x]
