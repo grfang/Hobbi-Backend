@@ -30,16 +30,10 @@ CORS(app)
 @app.route('/signup', methods=['POST'])
 def signup_route():
     data = request.json
+    user_id = data['user_id']
     email = data['emails']
     first_name = data['firstname']
     last_name = data['lastname']
-    exercise_goal = data['exercise_goal']
-    skill = data['skill']
-    equipment = data['equipment']
-    sleep_goal = data['sleep_goal']
-    wakeup_time = data['wakeup_time']
-    
-    user_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
     
     data = {
         "user_id": user_id,
@@ -47,13 +41,13 @@ def signup_route():
         "last": last_name,
         "email": email,
         "exercise_info": {
-            "exercise_goal": exercise_goal,
-            "skill": skill,
-            "equipment": equipment
+            "exercise_goal": 0,
+            "skill": "",
+            "equipment": []
         },
         "sleep_info": {
-            "sleep_goal": sleep_goal,
-            "wakeup_time": wakeup_time
+            "sleep_goal": 0,
+            "wakeup_time": 0
         },
         "journal_info": {
             "happiness_score": 0,
@@ -63,6 +57,33 @@ def signup_route():
     }
     
     db.collection("users").document(user_id).set(data)
+    
+    return jsonify({'success': True, 'data':{'user_id': user_id}})
+
+@app.route('/signup/preferences', methods=['POST'])
+def signup_route():
+    data = request.json
+    user_id = data['user_id']
+    exercise_goal = data['exercise_goal']
+    skill = data['skill']
+    equipment = data['equipment']
+    sleep_goal = data['sleep_goal']
+    wakeup_time = data['wakeup_time']
+    
+    data_to_update = {
+        "user_id": user_id,
+        "exercise_info": {
+            "exercise_goal": exercise_goal,
+            "skill": skill,
+            "equipment": equipment
+        },
+        "sleep_info": {
+            "sleep_goal": sleep_goal,
+            "wakeup_time": wakeup_time
+        }
+    }
+    
+    db.collection("users").document(user_id).update(data_to_update)
     
     return jsonify({'success': True, 'data':{'user_id': user_id}})
 
