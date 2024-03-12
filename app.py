@@ -73,7 +73,6 @@ def preferences():
     
     data_to_update = {
         "preferences_set": True,
-        "user_id": user_id,
         "exercise_info": {
             "exercise_goal": exercise_goal,
             "skill": skill,
@@ -230,6 +229,44 @@ def sleep():
             wakeUpTimes[x] = 24 + wakeUpTimes[x]
     
     return jsonify({'success': True, 'wakeup_times': wakeUpTimes})
+
+@app.route('/changeData', methods=['POST'])
+def change_data():
+    data = request.json
+    user_id = data['user_id']
+    email = data['email']
+    first_name = data['first_name']
+    last_name = data['last_name']
+    exercise_goal = data['exercise_goal']
+    skill = data['skill']
+    equipment = data['equipment']
+    sleep_goal = data['sleep_goal']
+    wakeup_time = data['wakeup_time']
+    
+    data_to_update = {
+        "first": first_name,
+        "last": last_name,
+        "email": email,
+        "exercise_info": {
+            "exercise_goal": exercise_goal,
+            "skill": skill,
+            "equipment": equipment
+        },
+        "sleep_info": {
+            "sleep_goal": sleep_goal,
+            "wakeup_time": wakeup_time
+        }
+    }
+    
+    db.collection("users").document(user_id).update(data_to_update)
+
+    user_query = db.collection("users").where("user_id", "==", user_id).limit(1).get()
+    
+    if not user_query:
+        return jsonify({'success': False})
+    else:
+        user_data = user_query[0].to_dict()
+        return jsonify({'success': True, 'data': user_data})
 
 if __name__ == '__main__':
     app.run()
