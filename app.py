@@ -31,15 +31,16 @@ CORS(app)
 def signup():
     data = request.json
     user_id = data['user_id']
-    email = data['emails']
-    first_name = data['firstname']
-    last_name = data['lastname']
+    email = data['email']
+    first_name = data['first_name']
+    last_name = data['last_name']
     
     data = {
         "user_id": user_id,
         "first": first_name,
         "last": last_name,
         "email": email,
+        "preferences_set": False,
         "exercise_info": {
             "exercise_goal": 0,
             "skill": "",
@@ -71,6 +72,7 @@ def preferences():
     wakeup_time = data['wakeup_time']
     
     data_to_update = {
+        "preferences_set": True,
         "user_id": user_id,
         "exercise_info": {
             "exercise_goal": exercise_goal,
@@ -112,6 +114,19 @@ def get_user_data():
     else:
         user_data = user_query[0].to_dict()
         return jsonify({'success': True, 'data': user_data})
+    
+@app.route('/preferences', methods=['GET'])
+def get_preferences_status():
+    query = request.args.to_dict()
+    user_id = query['user_id']
+    
+    user_query = db.collection("users").where("user_id", "==", user_id).limit(1).get()
+    
+    if not user_query:
+        return jsonify({'success': False})
+    else:
+        preferences_set = user_query[0].to_dict()['preferences_set']
+        return jsonify({'success': True, 'data': preferences_set})
     
 @app.route('/journal', methods=['POST'])
 def journal():
