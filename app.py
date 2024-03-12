@@ -28,7 +28,7 @@ CORS(app)
 
 #routes
 @app.route('/signup', methods=['POST'])
-def signup_route():
+def signup():
     data = request.json
     user_id = data['user_id']
     email = data['emails']
@@ -61,7 +61,7 @@ def signup_route():
     return jsonify({'success': True, 'data':{'user_id': user_id}})
 
 @app.route('/signup/preferences', methods=['POST'])
-def signup_route():
+def preferences():
     data = request.json
     user_id = data['user_id']
     exercise_goal = data['exercise_goal']
